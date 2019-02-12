@@ -1,28 +1,52 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import Form from './Form';
+import Pokemon from './Pokemon';
+import './App.css'
+import axios from 'axios';
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            showTimer: true,
+            featuredPokemon: null,
+            error: ""
+        };
+    }
+
+    handleSearch(term) {
+        axios.get(`https://pokeapi.co/api/v2/pokemon/${term}`)
+            .then((response) => {
+                // FOUND A POKEMON
+                this.setState({featuredPokemon: response.data, error: ""});
+            })
+            .catch((error) => {
+                // NO POKEMON FOUND
+                this.setState({error: "Your pokemon has not been found. Try again!"})
+            })
+    }
+
+    componentDidMount() {
+        axios.get("https://pokeapi.co/api/v2/pokemon/pikachu")
+            .then((response) => {
+                this.setState({featuredPokemon: response.data});
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }
+
+   
+    render() {
+        const pokemon = (this.state.featuredPokemon === null) ? <h3>...loading...</h3> : <Pokemon poke={this.state.featuredPokemon} />
+        return (
+            <div className="container">
+                <Form onFormSubmitted={(term) => this.handleSearch(term)} />
+                <p>{this.state.error}</p>
+                {pokemon}
+            </div>
+        )
+    }
 }
 
 export default App;
